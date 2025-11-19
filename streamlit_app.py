@@ -1,11 +1,9 @@
-
-
 # Import python packages
 import streamlit as st
 from snowflake.snowpark.functions import col
+import requests   # ← NEW for API requests
 
 st.write("Loaded secrets:", st.secrets.keys())
-
 
 # Write directly to the app
 st.title(f"Customize Your Smoothie :cup_with_straw: {st.__version__}")
@@ -21,9 +19,6 @@ session = cnx.session()
 # UI input
 name_on_order = st.text_input('Name on Smoothie:')
 st.write('The name on your Smoothie will be:', name_on_order)
-
-# ❌ REMOVE get_active_session()
-# session = get_active_session()
 
 # Read data from Snowflake
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
@@ -50,3 +45,22 @@ if ingredients_list:
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
+
+
+# -------------------------------------------------
+# 🍉 SmoothieFroot Nutrition API Section (NEW)
+# -------------------------------------------------
+
+st.header("Fruit Nutrition Info 🍓")
+
+fruit_choice = st.text_input("Enter a fruit to look up nutrition info:")
+
+if fruit_choice:
+    url = f"https://my.smoothiefroot.com/api/fruit/{fruit_choice.lower()}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        st.subheader(f"Nutrition for: {fruit_choice.capitalize()}")
+        st.json(response.json())
+    else:
+        st.error("Fruit not found or API error. Try another fruit.")
