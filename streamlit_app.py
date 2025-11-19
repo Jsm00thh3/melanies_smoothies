@@ -1,3 +1,5 @@
+st.write("Loaded secrets:", st.secrets.keys())
+
 # Import python packages
 import streamlit as st
 from snowflake.snowpark.functions import col
