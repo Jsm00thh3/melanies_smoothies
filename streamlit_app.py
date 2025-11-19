@@ -20,9 +20,15 @@ session = cnx.session()
 name_on_order = st.text_input('Name on Smoothie:')
 st.write('The name on your Smoothie will be:', name_on_order)
 
-# Load fruit list
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
-fruit_list = my_dataframe.to_pandas()["FRUIT_NAME"].tolist()
+# Load fruit list including SEARCH_ON
+fruit_table = session.table("smoothies.public.fruit_options").select(
+    col('FRUIT_NAME'),
+    col('SEARCH_ON')
+)
+
+# Convert to pandas so we can map FRUIT_NAME → SEARCH_ON
+fruit_df = fruit_table.to_pandas()
+fruit_list = fruit_df["FRUIT_NAME"].tolist()
 
 # Pick ingredients
 ingredients_list = st.multiselect(
@@ -37,12 +43,19 @@ if ingredients_list:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
 
-        # SmoothieFroot API call (inside loop — per lab instructions)
+        # Get the SEARCH_ON value for this fruit
+        search_term = fruit_df.loc[
+            fruit_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'
+        ].values[0]
+
+        # API call using SEARCH_ON instead of FRUIT_NAME
         smoothiefroot_response = requests.get(
-            f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen}"
+            f"https://my.smoothiefroot.com/api/fruit/{search_term}"
         )
 
-        sf_df = st.dataframe(
+        # Display result
+        st.subheader(f"{fruit_chosen} Nutrition Information")
+        st.dataframe(
             data=smoothiefroot_response.json(),
             use_container_width=True
         )
