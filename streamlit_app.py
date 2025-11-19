@@ -48,19 +48,22 @@ if ingredients_list:
 
 
 # -------------------------------------------------
-# 🍉 SmoothieFroot Nutrition API Section (NEW)
+# 🍉 SmoothieFroot Nutrition Info Section (Dropdown Version)
 # -------------------------------------------------
 
 st.header("Fruit Nutrition Info 🍓")
 
-fruit_choice = st.text_input("Enter a fruit to look up nutrition info:")
+nutrition_fruit = st.selectbox(
+    "Select a fruit to view nutrition details:",
+    fruit_list
+)
 
-if fruit_choice:
-    url = f"https://my.smoothiefroot.com/api/fruit/{fruit_choice.lower()}"
+if nutrition_fruit:
+    url = f"https://my.smoothiefroot.com/api/fruit/{nutrition_fruit.lower()}"
     response = requests.get(url)
 
     if response.status_code == 200:
-        st.subheader(f"Nutrition for: {fruit_choice.capitalize()}")
+        st.subheader(f"Nutrition for: {nutrition_fruit}")
         st.json(response.json())
     else:
-        st.error("Fruit not found or API error. Try another fruit.")
+        st.error("API error — try another fruit.")
